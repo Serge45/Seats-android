@@ -6,5 +6,6 @@ Now it contains
 * Random choosing
 * Detail noting
 * Save as JSON
+
 TODO:
 * Layout generation
