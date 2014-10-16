@@ -3,5 +3,13 @@
 
     <string name="app_name">Seats</string>
     <string name="action_settings">Settings</string>
+    <string name="action_main_save">Save</string>
+    <string name="action_main_shuffle">Shuffle</string>
+    <string name="action_main_random_choose">Random</string>
+    <string name="action_main_restore">Restore</string>
+    <string name="action_detail_name">Name</string>
+    <string name="action_detail_number">Number</string>
+    <string name="action_detail_ok">OK</string>
+    <string name="action_detail_cancel">Cancel</string>
 
 </resources>

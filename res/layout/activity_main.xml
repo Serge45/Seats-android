@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:text="Restore" />
+            android:text="@string/action_main_restore" />
 
         <Button
             android:id="@+id/shuffle_button"
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:text="Shuffle" />
+            android:text="@string/action_main_shuffle" />
 
         <Button
             android:id="@+id/random_choose_button"
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:text="Random" />
+            android:text="@string/action_main_random_choose" />
 
         <Button
             android:id="@+id/save_button"
@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:text="Save" />
+            android:text="@string/action_main_save" />
 
     </LinearLayout>
 

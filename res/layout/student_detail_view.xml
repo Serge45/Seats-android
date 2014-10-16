@@ -21,7 +21,7 @@
             android:id="@+id/name_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Name" />
+            android:text="@string/action_detail_name" />
 
         <EditText
             android:id="@+id/name_edit"
@@ -44,7 +44,7 @@
             android:id="@+id/num_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Number" />
+            android:text="@string/action_detail_number" />
 
         <EditText
             android:id="@+id/num_edit"
@@ -77,14 +77,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="OK" />
+            android:text="@string/action_detail_ok"/>
 
         <Button
             android:id="@+id/cancel_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Cancel" />
+            android:text="@string/action_detail_cancel" />
 
     </LinearLayout>
 
