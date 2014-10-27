@@ -11,5 +11,9 @@
     <string name="action_detail_number">Number</string>
     <string name="action_detail_ok">OK</string>
     <string name="action_detail_cancel">Cancel</string>
+    <string name="action_seats_button">Seats</string>
+    <string name="action_name_list_button">Names</string>
+    <string name="action_import_name_list_button">Import</string>
+    <string name="action_export_name_list_button">Export</string>
 
 </resources>

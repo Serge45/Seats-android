@@ -1,6 +1,6 @@
 package com.serge45.app.seats;
 
-import com.serge45.app.seats.MainActivity.ButtonWithInformation;
+import com.serge45.app.seats.SeatsActivity.ButtonWithInformation;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
@@ -25,7 +25,7 @@ public class StudentDetailDialog extends DialogFragment {
     private Button cancelButton;
     private String name;
     private int num;
-    private MainActivity.ButtonWithInformation target;
+    private SeatsActivity.ButtonWithInformation target;
     
     static StudentDetailDialog newInstance(String name, int num) {
         StudentDetailDialog f = new StudentDetailDialog();
@@ -114,7 +114,7 @@ public class StudentDetailDialog extends DialogFragment {
         });
     }
     
-    public void setTarget(MainActivity.ButtonWithInformation b) {
+    public void setTarget(SeatsActivity.ButtonWithInformation b) {
         target = b;
     }
     
