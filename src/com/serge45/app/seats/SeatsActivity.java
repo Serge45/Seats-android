@@ -23,10 +23,12 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.res.AssetManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.text.style.UpdateAppearance;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -44,18 +46,19 @@ public class SeatsActivity extends Activity {
     };
     
     public class ButtonWithInformation {
+        public ButtonWithInformation() {
+            info = new StudentInfo();
+        }
+        public void update() {
+            button.setText(info.name);
+        }
         Button button;
-        String name = "";
-        int number = 0;
-        boolean enabled;
-        float rating = 5;
-        String note = "";
+        StudentInfo info;
     };
     
     static String TAG = "Seats";
     private String saveDir = "";
     private String jsonFileName = "seats.json";
-    private String numToNameFileName = "names.csv";
     private SparseArray<String> numToName;
     private TableLayout tableLayout;
     private Button restoreButton;
@@ -72,6 +75,7 @@ public class SeatsActivity extends Activity {
     private int currentIterationCount = 0;
     private Handler handler;
     private long[] iteratorPeriods = new long[20];
+    private StudentDataDbHelper dbHelper;
     final private int maxRandomIterationCount = 20;
 
     @Override
@@ -91,6 +95,7 @@ public class SeatsActivity extends Activity {
             e.printStackTrace();
         }
         generateNumToNameMap();
+        dbHelper = new StudentDataDbHelper(this);
     }
 
     @Override
@@ -205,13 +210,15 @@ public class SeatsActivity extends Activity {
             
             ButtonWithInformation btn = seatButtonsMap.get(Pair.create(r, c));
             btn.button.setText(name);
-            btn.name = name;
-            btn.number = num;
-            btn.rating = rating;
-            btn.note = note;
+            btn.info.name = name;
+            btn.info.num = num;
+            btn.info.grade = rating;
+            btn.info.note = note;
+            btn.info.row = r;
+            btn.info.col = c;
             
             if (name.length() > 0) {
-                btn.enabled = true;
+                btn.info.status = 0;
                 btn.button.setEnabled(true);
             }
         }
@@ -221,8 +228,8 @@ public class SeatsActivity extends Activity {
         numToName = new SparseArray<String>();
         
         for (Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
-            numToName.put(entry.getValue().number,
-                          entry.getValue().name
+            numToName.put(entry.getValue().info.num,
+                          entry.getValue().info.name
                           );
         }
     }
@@ -245,6 +252,7 @@ public class SeatsActivity extends Activity {
             public void onClick(View v) {
                 try {
                     saveAsJson();
+                    saveToSQLite();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -299,19 +307,19 @@ public class SeatsActivity extends Activity {
                         swapPair.get(swapPair.size() - 1).button.setBackgroundColor(Color.YELLOW);
 
                         if (swapPair.size() == 2) {
-                            String tmp = swapPair.get(0).name;
-                            swapPair.get(0).button.setText(swapPair.get(1).name);
-                            swapPair.get(0).name = swapPair.get(1).name;
-                            swapPair.get(1).name = tmp;
-                            swapPair.get(1).button.setText(tmp);
-                            String tmpNote;
-                            tmpNote = swapPair.get(0).note;
-                            swapPair.get(0).note = swapPair.get(1).note;
-                            swapPair.get(1).note = tmpNote;
-                            float tmpRating = 5.f;
-                            tmpRating = swapPair.get(0).rating;
-                            swapPair.get(0).rating = swapPair.get(1).rating;
-                            swapPair.get(1).rating = tmpRating;
+                            try {
+                                StudentInfo info = (StudentInfo) swapPair.get(0).info.clone();
+                                swapPair.get(0).info = swapPair.get(1).info;
+                                swapPair.get(1).info = info;
+                                
+                                for (ButtonWithInformation b : swapPair) {
+                                    b.update();
+                                }
+                                
+                            } catch (CloneNotSupportedException e) {
+                                e.printStackTrace();
+                            }
+
 
                             for (ButtonWithInformation b : swapPair) {
                                 b.button.setBackgroundResource(android.R.drawable.btn_default);
@@ -371,9 +379,9 @@ public class SeatsActivity extends Activity {
                 );
                 ButtonWithInformation btn = new ButtonWithInformation();
                 btn.button = b;
-                btn.enabled = false;
-                btn.name = "";
-                btn.number = 0;
+                btn.info.status = -1;
+                btn.info.name = "";
+                btn.info.num = 0;
                 
                 seatButtonsMap.put(Pair.create(i, j), btn);
             }
@@ -392,11 +400,11 @@ public class SeatsActivity extends Activity {
             Pair<Integer, Integer> key = entry.getKey();
             ButtonWithInformation value = entry.getValue();
             JSONObject obj = new JSONObject();
-            obj.put("name", value.name);
-            obj.put("note", value.note);
-            obj.put("num", value.number);
-            obj.put("state", value.enabled);
-            obj.put("rating", value.rating);
+            obj.put("name", value.info.name);
+            obj.put("note", value.info.note);
+            obj.put("num", value.info.num);
+            obj.put("state", value.info.status);
+            obj.put("rating", value.info.grade);
             obj.put("row", key.first);
             obj.put("col", key.second);
             target.put(obj);
@@ -409,6 +417,22 @@ public class SeatsActivity extends Activity {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+    
+    private boolean saveToSQLite() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        
+        if (db == null) {
+            return false;
+        }
+        
+        for (ButtonWithInformation b : seatButtonsMap.values()) {
+            if (dbHelper.insertOrUpdateStudentData(b.info, db) < 0) {
+                return false;
+            }
+        }
+        db.close();
+        return true;
     }
     
     private void randomChooseButton() {
@@ -447,10 +471,10 @@ public class SeatsActivity extends Activity {
         for (int i = 0; i < rowCount; ++i) {
             for (int j = 0; j < colCount; ++j) {
                 ButtonWithInformation b = seatButtonsMap.get(Pair.create(i, j));
-                if (b != null && b.enabled) {
-                    b.number = numList.get(k);
-                    b.name = numToName.get(b.number);
-                    b.button.setText(b.name);
+                if (b != null && b.info.status >= 0) {
+                    b.info.num = numList.get(k);
+                    b.info.name = numToName.get(b.info.num);
+                    b.button.setText(b.info.name);
                     ++k;
                 }
             }
@@ -463,7 +487,7 @@ public class SeatsActivity extends Activity {
             Random random = new Random();
             
             for (Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
-                if (entry.getValue().enabled == false) {
+                if (entry.getValue().info.status < 0) {
                     continue;
                 }
 

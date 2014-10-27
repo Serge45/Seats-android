@@ -10,11 +10,9 @@ import java.util.List;
 import com.serge45.app.seats.StudentDataBase.StudentData;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
@@ -38,6 +36,7 @@ public class NameListActivity extends Activity {
         initViews();
         initListeners();
         dbHelper = new StudentDataDbHelper(this);
+        loadNameListFromSQLite();
     }
 
     protected void initViews() {
@@ -96,8 +95,6 @@ public class NameListActivity extends Activity {
     private void exportNameListToDb() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         
-        ContentValues values = null;
-        
         for (Pair<Integer, String> p : nameListAdaptor.getNumToNameList()) {
             StudentInfo info = new StudentInfo();
             info.num = p.first;
@@ -107,18 +104,27 @@ public class NameListActivity extends Activity {
             info.note = "";
             info.grade = 5.f;
             info.status = 0;
-
-            values = new ContentValues();
-            values.put(StudentData._ID, info.num);
-            values.put(StudentData.COLUMN_STUDENT_NAME, info.name);
-            values.put(StudentData.COLUMN_STUDENT_SEAT_ROW, info.row);
-            values.put(StudentData.COLUMN_STUDENT_SEAT_COL, info.col);
-            values.put(StudentData.COLUMN_STUDENT_GRADE, info.grade);
-            values.put(StudentData.COLUMN_STUDENT_NOTE, info.note);
-            values.put(StudentData.COLUMN_STUDENT_STATUS, info.status);
-            long newRowId = -1;
-            newRowId = db.insertWithOnConflict(StudentData.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-            Log.v(TAG, String.valueOf(newRowId));
+            dbHelper.insertOrUpdateStudentData(info, db);
         }
+    }
+    
+    boolean loadNameListFromSQLite() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<StudentInfo> all = dbHelper.getAllRow(db);
+        db.close();
+        List<Pair<Integer, String> > numNameList = new ArrayList<Pair<Integer,String>>();
+        
+        if (all.size() > 0) {
+            for (StudentInfo info : all) {
+                numNameList.add(Pair.create(info.num, info.name));
+            }
+        
+            nameListAdaptor.setNumToNameList(numNameList);
+            return true;
+        } else {
+            all = null;
+            return false;
+        }
+        
     }
 }

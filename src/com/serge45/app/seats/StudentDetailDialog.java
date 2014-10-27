@@ -42,11 +42,11 @@ public class StudentDetailDialog extends DialogFragment {
             
             @Override
             public void onClick(View v) {
-                target.name = name;
+                target.info.name = name;
                 target.button.setText(name);
-                target.note = noteEdit.getText().toString();
-                target.rating = ratingBar.getRating();
-                target.number = Integer.parseInt(numEdit.getText().toString());
+                target.info.note = noteEdit.getText().toString();
+                target.info.grade = ratingBar.getRating();
+                target.info.num = Integer.parseInt(numEdit.getText().toString());
                 getDialog().dismiss();
             }
         });
@@ -141,8 +141,8 @@ public class StudentDetailDialog extends DialogFragment {
         cancelButton = (Button) view.findViewById(R.id.cancel_button); 
         nameEdit.setText(name);
         numEdit.setText(String.valueOf(num));
-        noteEdit.setText(target.note);
-        ratingBar.setRating(target.rating);
+        noteEdit.setText(target.info.note);
+        ratingBar.setRating(target.info.grade);
         setListeners();
         getDialog().setTitle(name);
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
