@@ -39,7 +39,7 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 
-public class SeatsActivity extends Activity {
+public class SeatsActivity extends Activity implements StudentDetailDialogDismissListener {
     private enum SelectionMode {
         detail,
         swap
@@ -51,6 +51,11 @@ public class SeatsActivity extends Activity {
         }
         public void update() {
             button.setText(info.name);
+            if (info.status >= 0) {
+                button.setEnabled(true);
+            } else {
+                button.setEnabled(false);
+            }
         }
         Button button;
         StudentInfo info;
@@ -66,8 +71,8 @@ public class SeatsActivity extends Activity {
     private Button saveButton;
     private Button randomChooseButton;
     private ButtonWithInformation chosenButton;
-    private int rowCount = 6;
-    private int colCount = 7;
+    private int rowCount = 0;
+    private int colCount = 0;
     private Map<Pair<Integer, Integer>, ButtonWithInformation> seatButtonsMap = new HashMap<Pair<Integer, Integer>, ButtonWithInformation>();
     private SelectionMode selectionMode = SelectionMode.detail;
     private List<ButtonWithInformation> swapPair = new ArrayList<ButtonWithInformation>();
@@ -82,11 +87,14 @@ public class SeatsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.seats_layout);
+        dbHelper = new StudentDataDbHelper(this);
         initViews();
-        initSeatButtons();
+        //initSeatButtons();
+        loadStudentInfoFromSQLiteAndInit();
         initListeners();
         initJsonLoadPath();
         initRandomChooseTimer();
+        /*
         try {
             loadJsonAndInit();
         } catch (IOException e) {
@@ -94,8 +102,8 @@ public class SeatsActivity extends Activity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        */
         generateNumToNameMap();
-        dbHelper = new StudentDataDbHelper(this);
     }
 
     @Override
@@ -108,6 +116,28 @@ public class SeatsActivity extends Activity {
         }
     }
     
+    private void loadStudentInfoFromSQLiteAndInit() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<StudentInfo> all = dbHelper.getAllRow(db);
+        
+        for (StudentInfo info : all) {
+            rowCount = Math.max(info.row + 1, rowCount);
+            colCount = Math.max(info.col + 1, colCount);
+        }
+
+        if (tableLayout.getChildCount() == 0) {
+            initSeatButtons();
+        }
+        
+
+        for (StudentInfo info : all) {
+            ButtonWithInformation btn = seatButtonsMap.get(Pair.create(info.row, info.col));
+            btn.info = info;
+            btn.update();
+        }
+        
+    }
+
     private void initRandomChooseTimer() {
         for (int i = 0; i < iteratorPeriods.length; ++i) {
             iteratorPeriods[i] = 2 * (i + 1) * (i + 1); 
@@ -250,14 +280,16 @@ public class SeatsActivity extends Activity {
             
             @Override
             public void onClick(View v) {
+                saveToSQLite();
+                /*
                 try {
                     saveAsJson();
-                    saveToSQLite();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                */
             }
         });
         
@@ -269,6 +301,9 @@ public class SeatsActivity extends Activity {
                     chosenButton.button.setBackgroundResource(android.R.drawable.btn_default);
                 }
 
+                loadStudentInfoFromSQLiteAndInit();
+
+                /*
                 try {
                     loadJsonAndInit();
                     generateNumToNameMap();
@@ -277,6 +312,7 @@ public class SeatsActivity extends Activity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                */
             }
         });
         
@@ -333,20 +369,11 @@ public class SeatsActivity extends Activity {
                             ft.remove(prev);
                         }
                         ft.addToBackStack(null);
-                        Button b = (Button) v; 
-                        String name = b.getText().toString();
-                        int num = 0;
-                        
-                        for (int i = 0; i < numToName.size(); ++i) {
-                            if (numToName.valueAt(i).equals(name)) {
-                                num = numToName.keyAt(i);
-                                break;
-                            }
-                        }
 
                         StudentDetailDialog.numToName = numToName;
-                        StudentDetailDialog newFragment = StudentDetailDialog.newInstance(name, num);
-                        newFragment.setTarget(entry.getValue());
+                        StudentDetailDialog newFragment = StudentDetailDialog.newInstance(entry.getValue().info);
+                        newFragment.setOnDismissListener(SeatsActivity.this);
+                        
                         newFragment.show(ft, "detail");
                     }
                 }
@@ -511,6 +538,20 @@ public class SeatsActivity extends Activity {
                 }
             }
         }
+    }
+
+    @Override
+    public void onDismiss(StudentInfo info) {
+        for (final Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
+            ButtonWithInformation btn = entry.getValue();
+            
+            if (btn.info.row == info.row && btn.info.col == info.col) {
+                btn.info = info;
+                btn.update();
+                break;
+            }
+        }
+        
     }
 
 }

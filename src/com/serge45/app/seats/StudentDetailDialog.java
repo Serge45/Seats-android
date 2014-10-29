@@ -23,18 +23,26 @@ public class StudentDetailDialog extends DialogFragment {
     private EditText noteEdit;
     private Button okButton;
     private Button cancelButton;
-    private String name;
-    private int num;
-    private SeatsActivity.ButtonWithInformation target;
-    
-    static StudentDetailDialog newInstance(String name, int num) {
+    private StudentDetailDialogDismissListener dismissListener = null;
+    private StudentInfo localInfo;
+
+    static StudentDetailDialog newInstance(StudentInfo info) {
         StudentDetailDialog f = new StudentDetailDialog();
         
         Bundle args = new Bundle();
-        args.putString("name", name);
-        args.putInt("num", num);
+        args.putString("name", info.name);
+        args.putString("note", info.note);
+        args.putInt("num", info.num);
+        args.putInt("row", info.row);
+        args.putInt("col", info.col);
+        args.putFloat("grade", info.grade);
+        args.putInt("status", info.status);
         f.setArguments(args);
         return f;
+    }
+    
+    public void setOnDismissListener(StudentDetailDialogDismissListener l) {
+        dismissListener = l;
     }
     
     private void setListeners() {
@@ -42,11 +50,8 @@ public class StudentDetailDialog extends DialogFragment {
             
             @Override
             public void onClick(View v) {
-                target.info.name = name;
-                target.button.setText(name);
-                target.info.note = noteEdit.getText().toString();
-                target.info.grade = ratingBar.getRating();
-                target.info.num = Integer.parseInt(numEdit.getText().toString());
+                localInfo.grade = ratingBar.getRating();
+                dismissListener.onDismiss(localInfo);
                 getDialog().dismiss();
             }
         });
@@ -67,20 +72,20 @@ public class StudentDetailDialog extends DialogFragment {
                 
                 try {
                     n = Integer.valueOf(s.toString());
-                    num = n;
+                    localInfo.num = n;
                 } catch (NumberFormatException e) {
-                    name = "";
-                    nameEdit.setText(name);
+                    localInfo.name = "";
+                    nameEdit.setText(localInfo.name);
                     return;
                 }
                 String tmpName = null;
 
                 if ((tmpName = numToName.get(n)) != null) {
-                    name = tmpName;
+                    localInfo.name = tmpName;
                 } else {
-                    name = "";
+                    localInfo.name = "";
                 }
-                nameEdit.setText(name);
+                nameEdit.setText(localInfo.name);
             }
             
             @Override
@@ -109,13 +114,28 @@ public class StudentDetailDialog extends DialogFragment {
             
             @Override
             public void afterTextChanged(Editable s) {
-                name = s.toString();
+                localInfo.name = s.toString();
             }
         });
-    }
-    
-    public void setTarget(SeatsActivity.ButtonWithInformation b) {
-        target = b;
+        
+        noteEdit.addTextChangedListener(new TextWatcher() {
+            
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                
+            }
+            
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                    int after) {
+                
+            }
+            
+            @Override
+            public void afterTextChanged(Editable s) {
+                localInfo.note = s.toString();
+            }
+        });
     }
     
     @Override
@@ -124,9 +144,14 @@ public class StudentDetailDialog extends DialogFragment {
         int style = DialogFragment.STYLE_NORMAL;
         int theme = android.R.style.Theme_Dialog;
         setStyle(style, theme);
-        
-        name = getArguments().getString("name");
-        num = getArguments().getInt("num");
+        localInfo = new StudentInfo();
+        localInfo.name = getArguments().getString("name");
+        localInfo.num = getArguments().getInt("num");
+        localInfo.note = getArguments().getString("note");
+        localInfo.row = getArguments().getInt("row");
+        localInfo.col = getArguments().getInt("col");
+        localInfo.grade = getArguments().getFloat("grade");
+        localInfo.status = getArguments().getInt("status");
     }
     
     @Override
@@ -139,12 +164,12 @@ public class StudentDetailDialog extends DialogFragment {
         noteEdit = (EditText) view.findViewById(R.id.note_edit);
         okButton = (Button) view.findViewById(R.id.ok_button);
         cancelButton = (Button) view.findViewById(R.id.cancel_button); 
-        nameEdit.setText(name);
-        numEdit.setText(String.valueOf(num));
-        noteEdit.setText(target.info.note);
-        ratingBar.setRating(target.info.grade);
+        nameEdit.setText(localInfo.name);
+        numEdit.setText(String.valueOf(localInfo.num));
+        noteEdit.setText(localInfo.note);
+        ratingBar.setRating(localInfo.grade);
         setListeners();
-        getDialog().setTitle(name);
+        getDialog().setTitle(localInfo.name);
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         return view;
     }
