@@ -1,7 +1,5 @@
 package com.serge45.app.seats;
 
-import com.serge45.app.seats.SeatsActivity.ButtonWithInformation;
-
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.text.Editable;
