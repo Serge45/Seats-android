@@ -52,6 +52,32 @@ public class StudentDataDbHelper extends SQLiteOpenHelper {
         return newRowId;
     }
     
+    public StudentInfo getRow(SQLiteDatabase db, long id) {
+        StudentInfo info = null;
+        Cursor cursor = db.rawQuery("select * from " + StudentData.TABLE_NAME
+                                    + " where " + StudentData._ID + " = " + id, null);
+        
+        if (cursor.isAfterLast() == false) {
+            int num = cursor.getInt(cursor.getColumnIndex(StudentData._ID));
+            String name = cursor.getString(cursor.getColumnIndex(StudentData.COLUMN_STUDENT_NAME));
+            float grade = cursor.getFloat(cursor.getColumnIndex(StudentData.COLUMN_STUDENT_GRADE));
+            int r = cursor.getInt(cursor.getColumnIndex(StudentData.COLUMN_STUDENT_SEAT_ROW));
+            int c = cursor.getInt(cursor.getColumnIndex(StudentData.COLUMN_STUDENT_SEAT_COL));
+            String note = cursor.getString(cursor.getColumnIndex(StudentData.COLUMN_STUDENT_NOTE));
+            int status = cursor.getInt(cursor.getColumnIndex(StudentData.COLUMN_STUDENT_STATUS));
+
+            info = new StudentInfo();
+            info.num = num;
+            info.name = name;
+            info.grade = grade;
+            info.row = r;
+            info.col = c;
+            info.note = note;
+            info.status = status;
+        }
+        return info;
+    }
+    
     public List<StudentInfo> getAllRow(SQLiteDatabase db) {
         ArrayList<StudentInfo> result = new ArrayList<StudentInfo>();
         

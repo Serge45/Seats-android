@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -16,38 +17,40 @@ public class NameListAdaptor extends BaseAdapter {
     class NameListItemViewHolder {
         private TextView numTextView;
         private TextView nameTextView;
+        private TextView statusTextView;
+        private ImageView photoImageView;
     };
 
-    private List<Pair<Integer, String> > numToNameList;
+    private List<StudentInfo> infoList;
 
     private LayoutInflater inflater;
     
     public NameListAdaptor(Context context) {
-        numToNameList = new ArrayList<Pair<Integer,String>>();
+        infoList = new ArrayList<StudentInfo>();
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
     
-    public void setNumToNameList(List<Pair<Integer, String> > l) {
-        numToNameList = l;
+    public void setInfoList(List<StudentInfo> l) {
+        infoList = l;
     }
 
-    public List<Pair<Integer, String>> getNumToNameList() {
-        return numToNameList;
+    public List<StudentInfo> getInfoList() {
+        return infoList;
     }
 
     @Override
     public int getCount() {
-        return numToNameList.size();
+        return infoList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return numToNameList.get(position);
+        return infoList.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return numToNameList.get(position).first.longValue();
+        return infoList.get(position).num;
     }
 
     @Override
@@ -63,8 +66,10 @@ public class NameListAdaptor extends BaseAdapter {
         }
         viewHolder.numTextView = (TextView) convertView.findViewById(R.id.name_list_item_num);
         viewHolder.nameTextView = (TextView) convertView.findViewById(R.id.name_list_item_name);
-        viewHolder.numTextView.setText(numToNameList.get(position).first.toString());
-        viewHolder.nameTextView.setText(numToNameList.get(position).second);
+        viewHolder.statusTextView = (TextView) convertView.findViewById(R.id.name_list_item_status);
+        viewHolder.photoImageView = (ImageView) convertView.findViewById(R.id.name_list_item_photo); 
+        viewHolder.numTextView.setText(String.valueOf(infoList.get(position).num));
+        viewHolder.nameTextView.setText(infoList.get(position).name);
         return convertView;
     }
 

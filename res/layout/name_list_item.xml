@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center_vertical|start"
-    android:columnCount="2"
+    android:columnCount="4"
     android:gravity="start|center_vertical"
     android:orientation="horizontal"
     android:padding="2dp" >
@@ -27,12 +27,20 @@
 
     <TextView
         android:id="@+id/name_list_item_name"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_column="1"
         android:layout_gravity="start|center_vertical"
         android:layout_row="0"
         android:layout_rowSpan="2"
         android:text="name" />
+
+    <TextView
+        android:id="@+id/name_list_item_status"
+        android:layout_column="3"
+        android:layout_gravity="center_vertical|end"
+        android:layout_row="0"
+        android:layout_rowSpan="2"
+        android:text="@string/action_detail_status_normal" />
 
 </GridLayout>

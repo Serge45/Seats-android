@@ -81,30 +81,25 @@ public class NameListActivity extends Activity {
         InputStream assetInputStream = assetManager.open(DEFAULT_NAME_LIST_ASSET_NAME);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(assetInputStream));
 
-        List<Pair<Integer, String> > numNameList = new ArrayList<Pair<Integer,String>>();
+        List<StudentInfo> numNameList = new ArrayList<StudentInfo>();
         
         String line;
 
         while ((line = bufferedReader.readLine()) != null) {
             String[] elements = line.split(",");
-            numNameList.add(Pair.create(Integer.parseInt(elements[0]), elements[1]));
+            StudentInfo info = new StudentInfo();
+            info.name = elements[0];
+            info.num = Integer.parseInt(elements[1]);
+            numNameList.add(info);
         }
-        nameListAdaptor.setNumToNameList(numNameList);
+        nameListAdaptor.setInfoList(numNameList);
     }
     
     private void exportNameListToDb() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         
-        for (Pair<Integer, String> p : nameListAdaptor.getNumToNameList()) {
-            StudentInfo info = new StudentInfo();
-            info.num = p.first;
-            info.name = p.second;
-            info.row = 0;
-            info.col = 0;
-            info.note = "";
-            info.grade = 5.f;
-            info.status = 0;
-            dbHelper.insertOrUpdateStudentData(info, db);
+        for (StudentInfo p : nameListAdaptor.getInfoList()) {
+            dbHelper.insertOrUpdateStudentData(p, db);
         }
     }
     
@@ -112,14 +107,16 @@ public class NameListActivity extends Activity {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<StudentInfo> all = dbHelper.getAllRow(db);
         db.close();
-        List<Pair<Integer, String> > numNameList = new ArrayList<Pair<Integer,String>>();
+        List<StudentInfo> infoList = new ArrayList<StudentInfo>();
         
         if (all.size() > 0) {
             for (StudentInfo info : all) {
-                numNameList.add(Pair.create(info.num, info.name));
+                if (info.num > 0) {
+                    infoList.add(info);
+                }
             }
         
-            nameListAdaptor.setNumToNameList(numNameList);
+            nameListAdaptor.setInfoList(infoList);
             return true;
         } else {
             all = null;

@@ -9,6 +9,7 @@ import android.widget.Button;
 public class MainActivity extends Activity {
     private Button seatsButton;
     private Button namesListButton;
+    private Button settingButton;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +22,7 @@ public class MainActivity extends Activity {
     protected void initViews() {
         seatsButton = (Button) findViewById(R.id.seats_button); 
         namesListButton = (Button) findViewById(R.id.name_list_button); 
+        settingButton = (Button) findViewById(R.id.setting_button); 
     }
     
     protected void initListeners() {
@@ -40,6 +42,16 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, NameListActivity.class);
+                startActivity(intent);
+            }
+        });
+        
+        settingButton.setOnClickListener(new View.OnClickListener() {
+            
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, SeatSettingActivity.class);
                 startActivity(intent);
             }
         });

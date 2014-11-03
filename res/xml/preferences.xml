@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <com.serge45.app.seats.RowColPreference
+        android:key="setting_row"
+        android:title="@string/setting_row_count_title"
+    />
+
+    <com.serge45.app.seats.RowColPreference
+        android:key="setting_col"
+        android:title="@string/setting_col_count_title"
+    />
+    
+    <com.serge45.app.seats.SeatPreviewPreference
+        android:key="setting_preview"
+    />
+
+</PreferenceScreen>

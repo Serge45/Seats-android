@@ -15,5 +15,10 @@
     <string name="action_name_list_button">Names</string>
     <string name="action_import_name_list_button">Import</string>
     <string name="action_export_name_list_button">Export</string>
+    <string name="action_detail_status_normal">Normal</string>
+    <string name="action_detail_status_sick">Sick</string>
+    <string name="action_detail_status_absent">Absent</string>
+    <string name="setting_row_count_title">Row count</string>
+    <string name="setting_col_count_title">Column count</string>
 
 </resources>

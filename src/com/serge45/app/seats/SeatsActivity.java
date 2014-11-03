@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Vector;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,7 +29,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.text.style.UpdateAppearance;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -38,6 +38,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.Toast;
 
 public class SeatsActivity extends Activity implements StudentDetailDialogDismissListener {
     private enum SelectionMode {
@@ -176,6 +177,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
         
     }
 
+    @Deprecated
     private void loadJsonAndInit() throws IOException, JSONException {
         String filePath = saveDir + File.separator + jsonFileName;
         
@@ -280,7 +282,13 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
             
             @Override
             public void onClick(View v) {
-                saveToSQLite();
+                if (checkSeatsValid()) {
+                    saveToSQLite();
+                } else {
+                    Toast.makeText(SeatsActivity.this,
+                                   "Invalid seat layout, repeating number exists.", 
+                                   Toast.LENGTH_SHORT).show();
+                }
                 /*
                 try {
                     saveAsJson();
@@ -419,6 +427,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
         }
     }
     
+    @Deprecated
     private void saveAsJson() throws JSONException, IOException {
 
         JSONArray target = new JSONArray();
@@ -539,6 +548,26 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
             }
         }
     }
+    
+    private boolean checkSeatsValid() {
+        List<Integer> numList = new Vector<Integer>();
+        
+        for (Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
+            if (entry.getValue().info.num > 0) {
+                numList.add(entry.getValue().info.num);
+            }
+        }
+        
+        Collections.sort(numList);
+        
+
+        for (int i = 1; i < numList.size(); ++i) {
+            if (numList.get(i - 1).equals(numList.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @Override
     public void onDismiss(StudentInfo info) {
@@ -551,7 +580,6 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                 break;
             }
         }
-        
     }
 
 }

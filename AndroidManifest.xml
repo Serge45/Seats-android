@@ -26,6 +26,12 @@
             android:label="@string/app_name"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
         </activity>
+
+        <activity
+            android:name=".SeatSettingActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+        </activity>
         
         <activity
             android:name=".MainActivity"
