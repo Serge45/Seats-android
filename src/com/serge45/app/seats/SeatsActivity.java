@@ -23,12 +23,14 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -48,14 +50,17 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
     
     public class ButtonWithInformation {
         public ButtonWithInformation() {
+            button = null;
             info = new StudentInfo();
         }
         public void update() {
-            button.setText(info.name);
-            if (info.status >= 0) {
-                button.setEnabled(true);
-            } else {
-                button.setEnabled(false);
+            if (button != null) {
+                button.setText(info.name);
+                if (info.status >= 0) {
+                    button.setEnabled(true);
+                } else {
+                    button.setEnabled(false);
+                }
             }
         }
         Button button;
@@ -90,6 +95,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
         setContentView(R.layout.seats_layout);
         dbHelper = new StudentDataDbHelper(this);
         initViews();
+        initRowColumnCount();
         //initSeatButtons();
         loadStudentInfoFromSQLiteAndInit();
         initListeners();
@@ -117,26 +123,28 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
         }
     }
     
+    private void initRowColumnCount() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        rowCount = preferences.getInt("setting_row", 6);
+        colCount = preferences.getInt("setting_col", 7);
+    }
+    
     private void loadStudentInfoFromSQLiteAndInit() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<StudentInfo> all = dbHelper.getAllRow(db);
-        
-        for (StudentInfo info : all) {
-            rowCount = Math.max(info.row + 1, rowCount);
-            colCount = Math.max(info.col + 1, colCount);
-        }
 
         if (tableLayout.getChildCount() == 0) {
             initSeatButtons();
         }
-        
 
         for (StudentInfo info : all) {
             ButtonWithInformation btn = seatButtonsMap.get(Pair.create(info.row, info.col));
-            btn.info = info;
-            btn.update();
+            
+            if (btn != null) {
+                btn.info = info;
+                btn.update();
+            }
         }
-        
     }
 
     private void initRandomChooseTimer() {
@@ -172,9 +180,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-
         }
-        
     }
 
     @Deprecated
@@ -342,6 +348,10 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
         
         for (final Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
             Button btn = entry.getValue().button;
+            
+            if (btn == null) {
+                continue;
+            }
 
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -408,10 +418,11 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                     }
                 });
 
-                row.addView(b, new TableRow.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
-                                                         TableLayout.LayoutParams.MATCH_PARENT, 
+                row.addView(b, new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
+                                                         TableRow.LayoutParams.MATCH_PARENT, 
                                                          1.f)
                 );
+
                 ButtonWithInformation btn = new ButtonWithInformation();
                 btn.button = b;
                 btn.info.status = -1;
@@ -420,6 +431,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                 
                 seatButtonsMap.put(Pair.create(i, j), btn);
             }
+
             tableLayout.addView(row, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, 
                                                                   TableLayout.LayoutParams.MATCH_PARENT,
                                                                   1.f)

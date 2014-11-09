@@ -3,6 +3,7 @@ import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.NumberPicker;
 
 
@@ -12,19 +13,24 @@ public class RowColPreference extends DialogPreference {
 
     public RowColPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        
         initViews();
-        
     }
     
     protected void initViews() {
         setDialogLayoutResource(R.layout.preference_row_col);
         setPositiveButtonText(R.string.action_detail_ok);
         setNegativeButtonText(R.string.action_detail_cancel);
-        
     }
-    /*Create views...*/
     
+    @Override
+    protected View onCreateView(ViewGroup parent) {
+        View view = super.onCreateView(parent);
+
+        value = getPersistedInt(7);
+        setSummary(getContext().getResources().getString(R.string.setting_current_value) + value);
+        return view;
+    }
+
     protected void initListeners() {
         numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
@@ -41,7 +47,6 @@ public class RowColPreference extends DialogPreference {
         initListeners();
         numberPicker.setMinValue(2);
         numberPicker.setMaxValue(10);
-        value = getPersistedInt(7);
         numberPicker.setValue(value);
         return view;
     }
@@ -50,6 +55,7 @@ public class RowColPreference extends DialogPreference {
     protected void onDialogClosed(boolean positiveResult) {
         if (positiveResult) {
             persistInt(value);
+            setSummary(getContext().getResources().getString(R.string.setting_current_value) + value);
         }
     }
     

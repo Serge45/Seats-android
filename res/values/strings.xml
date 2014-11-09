@@ -20,5 +20,7 @@
     <string name="action_detail_status_absent">Absent</string>
     <string name="setting_row_count_title">Row count</string>
     <string name="setting_col_count_title">Column count</string>
+    <string name="setting_preview_title">Preview</string>
+    <string name="setting_current_value">Current:</string>
 
 </resources>
