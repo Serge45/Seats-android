@@ -10,20 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <Button
-            android:id="@+id/name_list_import_button"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_import_name_list_button" />
-
-        <Button
-            android:id="@+id/name_list_export_button"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_export_name_list_button" />
-
     </LinearLayout>
 
     <ListView

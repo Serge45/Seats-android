@@ -1,34 +1,52 @@
 package com.serge45.app.seats;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.serge45.app.seats.StudentDataBase.StudentData;
-
+import android.R.anim;
 import android.app.Activity;
-import android.content.res.AssetManager;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Pair;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
-public class NameListActivity extends Activity {
+public class NameListActivity extends Activity implements StudentDetailDialogDismissListener {
     final public static String DEFAULT_NAME_LIST_ASSET_NAME = "names.csv";
     final public static String TAG = "NameListActivity";
 
-    private Button importButton;
-    private Button exportButton;
     private ListView nameListView;
     private NameListAdaptor nameListAdaptor;
-    
     private StudentDataDbHelper dbHelper;
+    private int lastActiveItemIndex = -1;
     
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.name_list_action_bar, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_bar_name_list_add: {
+                StudentInfo info = new StudentInfo();
+                info.num = nameListAdaptor.getCount() + 1;//Temp setting.
+                createPopUpFragment(info, true, StudentDetailDialog.OpenState.CREATE);
+                break;
+            }
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,69 +59,40 @@ public class NameListActivity extends Activity {
 
     protected void initViews() {
         nameListAdaptor = new NameListAdaptor(this);
-        importButton = (Button) findViewById(R.id.name_list_import_button);
-        exportButton = (Button) findViewById(R.id.name_list_export_button); 
         nameListView = (ListView) findViewById(R.id.name_list_view); 
         nameListView.setAdapter(nameListAdaptor);
     }
     
     protected void initListeners() {
-        importButton.setOnClickListener(new View.OnClickListener() {
-            
-            @Override
-            public void onClick(View v) {
-                try {
-                    loadDefaultNameListFromAsset();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            nameListAdaptor.notifyDataSetChanged();
-                        }
-                    });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        
-        exportButton.setOnClickListener(new View.OnClickListener() {
+        nameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
-            public void onClick(View v) {
-                exportNameListToDb();
+            public void onItemClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+                lastActiveItemIndex = position;
+                StudentInfo info = (StudentInfo) nameListAdaptor.getItem(position);
+                createPopUpFragment(info, false, StudentDetailDialog.OpenState.UPDATE);
             }
         });
     }
     
-    private void loadDefaultNameListFromAsset() throws IOException {
-        AssetManager assetManager = getAssets();
+    private void createPopUpFragment(StudentInfo info, boolean edit, StudentDetailDialog.OpenState state) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("detail");
 
-        InputStream assetInputStream = assetManager.open(DEFAULT_NAME_LIST_ASSET_NAME);
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(assetInputStream));
-
-        List<StudentInfo> numNameList = new ArrayList<StudentInfo>();
-        
-        String line;
-
-        while ((line = bufferedReader.readLine()) != null) {
-            String[] elements = line.split(",");
-            StudentInfo info = new StudentInfo();
-            info.name = elements[0];
-            info.num = Integer.parseInt(elements[1]);
-            numNameList.add(info);
+        if (prev != null) {
+            ft.remove(prev);
         }
-        nameListAdaptor.setInfoList(numNameList);
+        ft.addToBackStack(null);
+
+        StudentDetailDialog newFragment = StudentDetailDialog.newInstance(info, edit);
+        newFragment.setOnDismissListener(NameListActivity.this);
+        newFragment.setOpenState(state);
+        StudentDetailDialog.infoList = nameListAdaptor.getInfoList();
+        newFragment.show(ft, "detail");
     }
     
-    private void exportNameListToDb() {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        
-        for (StudentInfo p : nameListAdaptor.getInfoList()) {
-            dbHelper.insertOrUpdateStudentData(p, db);
-        }
-    }
-    
-    boolean loadNameListFromSQLite() {
+    private boolean loadNameListFromSQLite() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<StudentInfo> all = dbHelper.getAllRow(db);
         db.close();
@@ -123,5 +112,23 @@ public class NameListActivity extends Activity {
             return false;
         }
         
+    }
+
+    @Override
+    public void onDismiss(StudentInfo info) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.insertOrUpdateStudentData(info, db);
+        db.close();
+        
+        if (lastActiveItemIndex > -1) {
+            nameListAdaptor.getInfoList()
+                           .get(lastActiveItemIndex)
+                           .copyExceptPos(info);
+        } else {
+            nameListAdaptor.getInfoList()
+                           .add(info);
+        }
+        nameListAdaptor.notifyDataSetChanged();
+        lastActiveItemIndex = -1;
     }
 }

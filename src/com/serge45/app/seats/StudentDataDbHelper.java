@@ -81,7 +81,7 @@ public class StudentDataDbHelper extends SQLiteOpenHelper {
     public List<StudentInfo> getAllRow(SQLiteDatabase db) {
         ArrayList<StudentInfo> result = new ArrayList<StudentInfo>();
         
-        Cursor cursor = db.rawQuery("select * from " + StudentData.TABLE_NAME, null);
+        Cursor cursor = db.rawQuery("select * from " + StudentData.TABLE_NAME + " where " + StudentData._ID + " > 0", null);
         
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {

@@ -80,6 +80,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
     private int rowCount = 0;
     private int colCount = 0;
     private Map<Pair<Integer, Integer>, ButtonWithInformation> seatButtonsMap = new HashMap<Pair<Integer, Integer>, ButtonWithInformation>();
+    private List<StudentInfo> studentInfoList = null;
     private SelectionMode selectionMode = SelectionMode.detail;
     private List<ButtonWithInformation> swapPair = new ArrayList<ButtonWithInformation>();
     private Runnable randomChooseRunner;
@@ -131,13 +132,13 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
     
     private void loadStudentInfoFromSQLiteAndInit() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        List<StudentInfo> all = dbHelper.getAllRow(db);
+        studentInfoList = dbHelper.getAllRow(db);
 
         if (tableLayout.getChildCount() == 0) {
             initSeatButtons();
         }
 
-        for (StudentInfo info : all) {
+        for (StudentInfo info : studentInfoList) {
             ButtonWithInformation btn = seatButtonsMap.get(Pair.create(info.row, info.col));
             
             if (btn != null) {
@@ -361,19 +362,19 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                         swapPair.get(swapPair.size() - 1).button.setBackgroundColor(Color.YELLOW);
 
                         if (swapPair.size() == 2) {
+                            StudentInfo info = null;
+
                             try {
-                                StudentInfo info = (StudentInfo) swapPair.get(0).info.clone();
-                                swapPair.get(0).info = swapPair.get(1).info;
-                                swapPair.get(1).info = info;
-                                
-                                for (ButtonWithInformation b : swapPair) {
-                                    b.update();
-                                }
-                                
+                                info = (StudentInfo) swapPair.get(0).info.clone();
                             } catch (CloneNotSupportedException e) {
                                 e.printStackTrace();
                             }
-
+                            swapPair.get(0).info.copyExceptPos(swapPair.get(1).info);
+                            swapPair.get(1).info.copyExceptPos(info);
+                                
+                            for (ButtonWithInformation b : swapPair) {
+                                b.update();
+                            }
 
                             for (ButtonWithInformation b : swapPair) {
                                 b.button.setBackgroundResource(android.R.drawable.btn_default);
@@ -382,17 +383,17 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                         }
                     } else if (selectionMode == SelectionMode.detail) {
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag("detail");
+                        Fragment prev = getFragmentManager().findFragmentByTag("selection");
                         if (prev != null) {
                             ft.remove(prev);
                         }
                         ft.addToBackStack(null);
 
-                        StudentDetailDialog.numToName = numToName;
-                        StudentDetailDialog newFragment = StudentDetailDialog.newInstance(entry.getValue().info);
+                        StudentSelectionDialog.infoList = studentInfoList;
+                        StudentSelectionDialog newFragment = StudentSelectionDialog.newInstance(entry.getValue().info);
                         newFragment.setOnDismissListener(SeatsActivity.this);
                         
-                        newFragment.show(ft, "detail");
+                        newFragment.show(ft, "selection");
                     }
                 }
             });

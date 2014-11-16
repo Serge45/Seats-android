@@ -48,6 +48,7 @@ public class RowColPreference extends DialogPreference {
         numberPicker.setMinValue(2);
         numberPicker.setMaxValue(10);
         numberPicker.setValue(value);
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         return view;
     }
 

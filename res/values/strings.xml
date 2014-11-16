@@ -22,5 +22,10 @@
     <string name="setting_col_count_title">Column count</string>
     <string name="setting_preview_title">Preview</string>
     <string name="setting_current_value">Current:</string>
+    <string name="action_name_list_add">Add</string>
+    <string name="action_name_list_delete">Delete</string>
+    <string name="action_detail_editing">Editting</string>
+    <string name="action_detail_edit_enable">Edit</string>
+    <string name="activity_title_name_list">Name list</string>
 
 </resources>

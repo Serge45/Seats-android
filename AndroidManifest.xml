@@ -23,8 +23,8 @@
 
         <activity
             android:name=".NameListActivity"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            android:label="@string/activity_title_name_list"
+            android:theme="@android:style/Theme.Holo">
         </activity>
 
         <activity
