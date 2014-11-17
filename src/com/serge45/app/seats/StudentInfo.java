@@ -14,7 +14,7 @@ public class StudentInfo implements Cloneable, Comparable<StudentInfo> {
         name = "";
         row = -1;
         col = -1;
-        grade = 0.f;
+        grade = 5.f;
         note = "";
         status = -1;
     }

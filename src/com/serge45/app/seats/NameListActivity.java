@@ -3,11 +3,14 @@ package com.serge45.app.seats;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.R.anim;
-import android.app.Activity;
+import com.serge45.app.seats.R.integer;
+
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,36 +18,31 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 
-public class NameListActivity extends Activity implements StudentDetailDialogDismissListener {
+public class NameListActivity extends ActionBarActivity implements StudentDetailDialogDismissListener {
+    enum ActivityMode {
+        NORMAL,
+        DELETE
+    };
+
     final public static String DEFAULT_NAME_LIST_ASSET_NAME = "names.csv";
     final public static String TAG = "NameListActivity";
 
     private ListView nameListView;
+    private Toolbar toolbar;
     private NameListAdaptor nameListAdaptor;
     private StudentDataDbHelper dbHelper;
     private int lastActiveItemIndex = -1;
+    private ActivityMode activityMode = ActivityMode.NORMAL;
+    private Drawable orgDeleteActionBackground;
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.name_list_action_bar, menu);
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_bar_name_list_add: {
-                StudentInfo info = new StudentInfo();
-                info.num = nameListAdaptor.getCount() + 1;//Temp setting.
-                createPopUpFragment(info, true, StudentDetailDialog.OpenState.CREATE);
-                break;
-            }
-            default:
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -61,6 +59,9 @@ public class NameListActivity extends Activity implements StudentDetailDialogDis
         nameListAdaptor = new NameListAdaptor(this);
         nameListView = (ListView) findViewById(R.id.name_list_view); 
         nameListView.setAdapter(nameListAdaptor);
+        toolbar = (Toolbar) findViewById(R.id.name_list_toolbar);
+        toolbar.setBackgroundColor(Color.BLACK);
+        setSupportActionBar(toolbar);
     }
     
     protected void initListeners() {
@@ -69,9 +70,56 @@ public class NameListActivity extends Activity implements StudentDetailDialogDis
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
-                lastActiveItemIndex = position;
-                StudentInfo info = (StudentInfo) nameListAdaptor.getItem(position);
-                createPopUpFragment(info, false, StudentDetailDialog.OpenState.UPDATE);
+                
+                if (activityMode == ActivityMode.NORMAL) {
+                    lastActiveItemIndex = position;
+                    StudentInfo info = (StudentInfo) nameListAdaptor.getItem(position);
+                    createPopUpFragment(info, false, StudentDetailDialog.OpenState.UPDATE);
+                } else {
+                    /*Deletion operation.*/
+                }
+            }
+        });
+        
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            
+            @SuppressLint("NewApi")
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                boolean ret = false;
+                
+                switch (item.getItemId()) {
+                    case R.id.action_bar_name_list_add: {
+                        StudentInfo info = new StudentInfo();
+                        info.num = nameListAdaptor.getCount() + 1;//Temp setting.
+                        createPopUpFragment(info, true, StudentDetailDialog.OpenState.CREATE);
+                        ret = true;
+                        break;
+                    }
+                    
+                    case R.id.action_bar_name_list_delete: {
+                        View view = findViewById(R.id.action_bar_name_list_delete);
+                        if (activityMode == ActivityMode.NORMAL) {
+                            view.setBackgroundColor(Color.RED);
+                            activityMode = ActivityMode.DELETE;
+                        } else {
+                            int sdk = android.os.Build.VERSION.SDK_INT;
+
+                            if (sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                                view.setBackgroundDrawable(orgDeleteActionBackground);
+                            } else {
+                                view.setBackground(orgDeleteActionBackground);
+                            }
+                            activityMode = ActivityMode.NORMAL;
+                        }
+                        ret = true;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                return ret;
             }
         });
     }

@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".NameListActivity">
+
     <item android:id="@+id/action_bar_name_list_add"
           android:icon="@drawable/ic_action_new"
           android:title="@string/action_name_list_add"
-          android:showAsAction="ifRoom"/>
+          android:orderInCategory="90"
+          app:showAsAction="ifRoom"/>
 
     <item android:id="@+id/action_bar_name_list_delete"
           android:icon="@drawable/ic_action_discard"
           android:title="@string/action_name_list_delete"
-          android:showAsAction="ifRoom"/>
+          android:orderInCategory="100"
+          app:showAsAction="ifRoom"/>
 
 </menu>
