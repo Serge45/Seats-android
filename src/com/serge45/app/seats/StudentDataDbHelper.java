@@ -37,6 +37,12 @@ public class StudentDataDbHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
     
+    public long deleteStudentData(StudentInfo info, SQLiteDatabase db) {
+        return db.delete(StudentData.TABLE_NAME, 
+                         StudentData._ID + "=" + info.num,
+                         null);
+    }
+    
     public long insertOrUpdateStudentData(StudentInfo info, SQLiteDatabase db) {
         ContentValues values = new ContentValues();
         values.put(StudentData._ID, info.num);

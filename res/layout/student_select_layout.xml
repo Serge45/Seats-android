@@ -15,18 +15,19 @@
         android:orientation="horizontal" >
 
         <Button
+            android:id="@+id/student_select_cancel_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/action_detail_cancel" />
+
+        <Button
             android:id="@+id/student_select_ok_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/action_detail_ok" />
 
-        <Button
-            android:id="@+id/student_select_cancel_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_detail_cancel" />
 
     </LinearLayout>
 

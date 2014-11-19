@@ -84,19 +84,19 @@
 
         <Button
             style="?android:attr/buttonBarButtonStyle"
-            android:id="@+id/ok_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_detail_ok"/>
-
-        <Button
-            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/cancel_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/action_detail_cancel" />
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/ok_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/action_detail_ok"/>
 
     </LinearLayout>
 

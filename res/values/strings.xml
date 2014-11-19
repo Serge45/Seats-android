@@ -27,5 +27,9 @@
     <string name="action_detail_editing">Editting</string>
     <string name="action_detail_edit_enable">Edit</string>
     <string name="activity_title_name_list">Name list</string>
+    <string name="information_dialog_title">Information</string>
+    <string name="information_dialog_yes">Yes</string>
+    <string name="information_dialog_no">No</string>
+    <string name="information_dialog_delete_message">Delete it?</string>
 
 </resources>

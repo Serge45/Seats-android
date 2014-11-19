@@ -3,11 +3,12 @@ package com.serge45.app.seats;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.serge45.app.seats.R.integer;
-
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -64,19 +65,49 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
         setSupportActionBar(toolbar);
     }
     
+    protected AlertDialog createDeleteAlertDialog(final StudentInfo info) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(NameListActivity.this);
+
+        builder.setTitle(R.string.information_dialog_title)
+               .setMessage(R.string.information_dialog_delete_message)
+               .setPositiveButton(R.string.information_dialog_yes, new DialogInterface.OnClickListener() {
+                
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                /*Deletion operation.*/
+                nameListAdaptor.getInfoList().remove(lastActiveItemIndex);
+                nameListAdaptor.notifyDataSetChanged();
+
+                SQLiteDatabase db = dbHelper.getReadableDatabase();
+                dbHelper.deleteStudentData(info, db);
+            }
+        });
+            
+        builder.setNeutralButton(R.string.information_dialog_no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+               
+        });
+           
+        return builder.create();
+    }
+    
     protected void initListeners() {
         nameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
+
+                lastActiveItemIndex = position;
+                final StudentInfo info = (StudentInfo) nameListAdaptor.getItem(position);
                 
                 if (activityMode == ActivityMode.NORMAL) {
-                    lastActiveItemIndex = position;
-                    StudentInfo info = (StudentInfo) nameListAdaptor.getItem(position);
                     createPopUpFragment(info, false, StudentDetailDialog.OpenState.UPDATE);
                 } else {
-                    /*Deletion operation.*/
+                    createDeleteAlertDialog(info).show();
                 }
             }
         });

@@ -1,7 +1,6 @@
 package com.serge45.app.seats;
 
 import java.util.List;
-
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
