@@ -45,7 +45,7 @@ import android.widget.Toast;
 public class SeatsActivity extends Activity implements StudentDetailDialogDismissListener {
     private enum SelectionMode {
         detail,
-        swap
+        swap,
     };
     
     public class ButtonWithInformation {
@@ -76,6 +76,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
     private Button shuffleButton;
     private Button saveButton;
     private Button randomChooseButton;
+    private Button arrangeButton;
     private ButtonWithInformation chosenButton;
     private int rowCount = 0;
     private int colCount = 0;
@@ -89,6 +90,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
     private long[] iteratorPeriods = new long[20];
     private StudentDataDbHelper dbHelper;
     final private int maxRandomIterationCount = 20;
+    private boolean arrangeEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -281,6 +283,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
         shuffleButton = (Button) findViewById(R.id.shuffle_button); 
         saveButton = (Button) findViewById(R.id.save_button); 
         randomChooseButton = (Button) findViewById(R.id.random_choose_button); 
+        arrangeButton = (Button) findViewById(R.id.arrange_button); 
     }
     
     /*Too long...*/
@@ -398,6 +401,13 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                 }
             });
         }
+        
+        arrangeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setArrangeEnabled(!arrangeEnabled);
+            }
+        });
     }
     
     private void initSeatButtons() {
@@ -429,6 +439,8 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                 btn.info.status = -1;
                 btn.info.name = "";
                 btn.info.num = 0;
+                btn.info.row = i;
+                btn.info.col = j;
                 
                 seatButtonsMap.put(Pair.create(i, j), btn);
             }
@@ -508,7 +520,7 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
         
         for (int i = 0; i < numToName.size(); ++i) {
             Integer key = numToName.keyAt(i);
-            if (numToName.valueAt(i).length() > 1) {
+            if (numToName.valueAt(i).length() > 0) {
                 numList.add(key);
             }
         }
@@ -591,6 +603,22 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
                 btn.info = info;
                 btn.update();
                 break;
+            }
+        }
+    }
+    
+    void setArrangeEnabled(boolean onOff) {
+        arrangeEnabled = onOff;
+        
+        if (onOff == true) {
+            for (final Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
+                ButtonWithInformation btn = entry.getValue();
+                btn.button.setEnabled(true);
+            }
+        } else {
+            for (final Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
+                ButtonWithInformation btn = entry.getValue();
+                btn.button.setEnabled(btn.info.status >= 0);
             }
         }
     }

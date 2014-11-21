@@ -16,7 +16,7 @@ public class StudentInfo implements Cloneable, Comparable<StudentInfo> {
         col = -1;
         grade = 5.f;
         note = "";
-        status = -1;
+        status = 0;
     }
     
     public void copyExceptPos(StudentInfo info) {
