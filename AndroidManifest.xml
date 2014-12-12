@@ -25,7 +25,8 @@
         <activity
             android:name=".NameListActivity"
             android:label="@string/activity_title_name_list"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait">
         </activity>
 
         <activity

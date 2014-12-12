@@ -6,7 +6,8 @@
     android:columnCount="4"
     android:gravity="start|center_vertical"
     android:orientation="horizontal"
-    android:padding="2dp" >
+    android:padding="2dp" 
+    android:background="?android:attr/activatedBackgroundIndicator">
 
     <TextView
         android:id="@+id/name_list_item_num"

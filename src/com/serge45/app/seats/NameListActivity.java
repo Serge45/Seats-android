@@ -3,6 +3,9 @@ package com.serge45.app.seats;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.serge45.app.seats.NameListActivity.ActivityMode;
+import com.serge45.app.seats.R.integer;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -12,6 +15,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.text.AlteredCharSequence;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,6 +43,7 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
     private int lastActiveItemIndex = -1;
     private ActivityMode activityMode = ActivityMode.NORMAL;
     private Drawable orgDeleteActionBackground;
+    private int nameListViewChoiceMode = ListView.CHOICE_MODE_NONE;
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -53,18 +60,21 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
         initListeners();
         dbHelper = new StudentDataDbHelper(this);
         loadNameListFromSQLite();
+        
+        nameListView.setChoiceMode(nameListViewChoiceMode);
     }
 
     protected void initViews() {
         nameListAdaptor = new NameListAdaptor(this);
         nameListView = (ListView) findViewById(R.id.name_list_view); 
         nameListView.setAdapter(nameListAdaptor);
+        nameListView.setSelector(R.drawable.list_view_selector);
         toolbar = (Toolbar) findViewById(R.id.name_list_toolbar);
         toolbar.setBackgroundColor(Color.BLACK);
         setSupportActionBar(toolbar);
     }
     
-    protected AlertDialog createDeleteAlertDialog(final StudentInfo info) {
+    protected AlertDialog createDeleteAlertDialog(final List<Integer> delList) {
         AlertDialog.Builder builder = new AlertDialog.Builder(NameListActivity.this);
 
         builder.setTitle(R.string.information_dialog_title)
@@ -74,11 +84,20 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 /*Deletion operation.*/
-                nameListAdaptor.getInfoList().remove(lastActiveItemIndex);
-                nameListAdaptor.notifyDataSetChanged();
-
                 SQLiteDatabase db = dbHelper.getReadableDatabase();
-                dbHelper.deleteStudentData(info, db);
+
+                StudentInfo info = null;
+                List<StudentInfo> infoList = nameListAdaptor.getInfoList();
+
+                for (int i = delList.size() - 1; i >= 0; --i) {
+                    info = infoList.get(delList.get(i));
+                    infoList.remove(delList.get(i).intValue());
+                    dbHelper.deleteStudentData(info, db);
+                }
+                
+                nameListAdaptor.notifyDataSetChanged();
+                nameListView.clearChoices();
+                switchActivityMode(ActivityMode.NORMAL);
             }
         });
             
@@ -94,6 +113,38 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
     }
     
     protected void initListeners() {
+        nameListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+                ActivityMode targetMode = ActivityMode.NORMAL;
+                nameListViewChoiceMode = ListView.CHOICE_MODE_NONE;
+
+                if (activityMode == ActivityMode.NORMAL) {
+                    targetMode = ActivityMode.DELETE;
+                    nameListViewChoiceMode = ListView.CHOICE_MODE_MULTIPLE;
+                } else {
+                    nameListView.clearChoices();
+                }
+
+                switchActivityMode(targetMode);
+                
+                final int p = position;
+                
+                nameListView.post(new Runnable() {
+                    public void run() {
+                        nameListView.setChoiceMode(nameListViewChoiceMode);
+                        
+                        if (activityMode == ActivityMode.DELETE) {
+                            nameListView.setItemChecked(p, true);
+                        }
+                    }
+                });
+                
+                return true;
+            }
+            
+        });
         nameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -105,16 +156,12 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
                 
                 if (activityMode == ActivityMode.NORMAL) {
                     createPopUpFragment(info, false, StudentDetailDialog.OpenState.UPDATE);
-                } else {
-                    createDeleteAlertDialog(info).show();
                 }
             }
         });
         
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             
-            @SuppressLint("NewApi")
-            @SuppressWarnings("deprecation")
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 boolean ret = false;
@@ -129,21 +176,21 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
                     }
                     
                     case R.id.action_bar_name_list_delete: {
-                        View view = findViewById(R.id.action_bar_name_list_delete);
-                        if (activityMode == ActivityMode.NORMAL) {
-                            view.setBackgroundColor(Color.RED);
-                            activityMode = ActivityMode.DELETE;
-                        } else {
-                            int sdk = android.os.Build.VERSION.SDK_INT;
-
-                            if (sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-                                view.setBackgroundDrawable(orgDeleteActionBackground);
-                            } else {
-                                view.setBackground(orgDeleteActionBackground);
-                            }
-                            activityMode = ActivityMode.NORMAL;
+                        SparseBooleanArray checked = nameListView.getCheckedItemPositions();
+                        
+                        if (checked == null) {
+                            return ret;
                         }
-                        ret = true;
+                        
+                        List<Integer> deletionList = new ArrayList<Integer>();
+                        
+                        for (int i = 0; i < nameListView.getCount(); ++i) {
+                            if (checked.get(i)) {
+                                deletionList.add(i);
+                            }
+                        }
+                        AlertDialog dialog = createDeleteAlertDialog(deletionList);
+                        dialog.show();
                         break;
                     }
                     default:
@@ -208,5 +255,40 @@ public class NameListActivity extends ActionBarActivity implements StudentDetail
         }
         nameListAdaptor.notifyDataSetChanged();
         lastActiveItemIndex = -1;
+    }
+    
+    @SuppressWarnings("deprecation")
+    @SuppressLint("NewApi")
+    private void switchActivityMode(ActivityMode mode) {
+        activityMode = mode;
+        View deleteView = findViewById(R.id.action_bar_name_list_delete);
+        View addView = findViewById(R.id.action_bar_name_list_add);
+        
+        switch(activityMode) {
+        case NORMAL: {
+            addView.setEnabled(true);
+            deleteView.setEnabled(false);
+
+            int sdk = android.os.Build.VERSION.SDK_INT;
+
+            if (sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                deleteView.setBackgroundDrawable(orgDeleteActionBackground);
+            } else {
+                deleteView.setBackground(orgDeleteActionBackground);
+            }
+            
+            break;
+        }
+        
+        case DELETE: {
+            addView.setEnabled(false);
+            deleteView.setEnabled(true);
+            deleteView.setBackgroundColor(Color.RED);
+            activityMode = ActivityMode.DELETE;
+            break;
+        }
+        default:
+            break;
+        }
     }
 }

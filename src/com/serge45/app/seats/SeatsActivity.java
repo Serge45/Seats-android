@@ -268,10 +268,8 @@ public class SeatsActivity extends Activity implements StudentDetailDialogDismis
     private void generateNumToNameMap() {
         numToName = new SparseArray<String>();
         
-        for (Map.Entry<Pair<Integer, Integer>, ButtonWithInformation> entry : seatButtonsMap.entrySet()) {
-            numToName.put(entry.getValue().info.num,
-                          entry.getValue().info.name
-                          );
+        for (StudentInfo info : studentInfoList) {
+            numToName.put(info.num, info.name);
         }
     }
 
